@@ -1,0 +1,3 @@
+include LICENSE
+recursive-exclude * *.py[co]
+recursive-include bankreader/locale *

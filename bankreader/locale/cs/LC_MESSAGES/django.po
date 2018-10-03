@@ -1,0 +1,129 @@
+# Django bankreader translation.
+# Copyright (C) 2018 Jakub Dorňák <jakub.dornak@misli.cz>
+# This file is distributed under the same license as the django-bankreader package.
+# Jakub Dorňák <jakub.dornak@misli.cz>, 2018.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: django-bankreader\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-10-04 23:14+0200\n"
+"Last-Translator: Jakub Dorňák <jakub.dornak@misli.cz>\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#: admin.py:32
+msgid "All"
+msgstr "Vše"
+
+#: admin.py:33
+msgid "Identified"
+msgstr "Identifikované"
+
+#: admin.py:34
+msgid "Not identified"
+msgstr "Neidentifikované"
+
+#: admin.py:56 models.py:19 models.py:27 models.py:46
+msgid "account"
+msgstr "účet"
+
+#: admin.py:77 models.py:38
+msgid "account statement"
+msgstr "výpis účtu"
+
+#: admin.py:78
+msgid "file format"
+msgstr "formát souboru"
+
+#: admin.py:88
+msgid "Failed to read transaction data in format {}."
+msgstr "Nepodařilo se přečíst data o transakcích ve formátu {}."
+
+#: models.py:14
+msgid "account name"
+msgstr "název účtu"
+
+#: models.py:15
+msgid "IBAN"
+msgstr "IBAN"
+
+#: models.py:16
+msgid "BIC (SWIFT)"
+msgstr "BIC (SWIFT)"
+
+#: models.py:20
+msgid "accounts"
+msgstr "účty"
+
+#: models.py:28
+msgid "statement"
+msgstr "výpis"
+
+#: models.py:29
+msgid "from date"
+msgstr "od data"
+
+#: models.py:30
+msgid "to date"
+msgstr "do data"
+
+#: models.py:39
+msgid "account statements"
+msgstr "výpisy účtu"
+
+#: models.py:47
+msgid "transaction id"
+msgstr "identifikátor transakce"
+
+#: models.py:48
+msgid "entry date"
+msgstr "datum zadání"
+
+#: models.py:49
+msgid "accounted date"
+msgstr "datum zaúčtování"
+
+#: models.py:50
+msgid "remote account number"
+msgstr "číslo protiúčtu"
+
+#: models.py:51
+msgid "remote account name"
+msgstr "název protiúčtu"
+
+#: models.py:52
+msgid "amount"
+msgstr "částka"
+
+#: models.py:53
+msgid "variable symbol"
+msgstr "variabilní symbol"
+
+#: models.py:54
+msgid "constant symbol"
+msgstr "konstantní symbol"
+
+#: models.py:55
+msgid "specific symbol"
+msgstr "specifický symbol"
+
+#: models.py:56
+msgid "description for sender"
+msgstr "popis pro odesilatele"
+
+#: models.py:57
+msgid "description for recipient"
+msgstr "popis pro příjemce"
+
+#: models.py:62
+msgid "transaction"
+msgstr "transakce"
+
+#: models.py:63
+msgid "transactions"
+msgstr "transakce"
