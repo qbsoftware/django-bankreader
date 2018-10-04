@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: django-bankreader\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-04 23:14+0200\n"
+"POT-Creation-Date: 2018-10-05 00:59+0200\n"
 "Last-Translator: Jakub Dorňák <jakub.dornak@misli.cz>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
@@ -16,114 +16,122 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 
-#: admin.py:32
+#: admin.py:33 admin.py:52
 msgid "All"
 msgstr "Vše"
 
-#: admin.py:33
-msgid "Identified"
-msgstr "Identifikované"
+#: admin.py:38
+msgid "Credit transactions"
+msgstr "Kreditní transakce"
 
-#: admin.py:34
+#: admin.py:43
+msgid "Debit transactions"
+msgstr "Debetní transakce"
+
+#: admin.py:57
 msgid "Not identified"
 msgstr "Neidentifikované"
 
-#: admin.py:56 models.py:19 models.py:27 models.py:46
+#: admin.py:62
+msgid "Identified"
+msgstr "Identifikované"
+
+#: admin.py:78 models.py:14 models.py:22 models.py:37
 msgid "account"
 msgstr "účet"
 
-#: admin.py:77 models.py:38
+#: admin.py:99 models.py:29
 msgid "account statement"
 msgstr "výpis účtu"
 
-#: admin.py:78
+#: admin.py:100
 msgid "file format"
 msgstr "formát souboru"
 
-#: admin.py:88
+#: admin.py:110
 msgid "Failed to read transaction data in format {}."
 msgstr "Nepodařilo se přečíst data o transakcích ve formátu {}."
 
-#: models.py:14
+#: models.py:9
 msgid "account name"
 msgstr "název účtu"
 
-#: models.py:15
+#: models.py:10
 msgid "IBAN"
 msgstr "IBAN"
 
-#: models.py:16
+#: models.py:11
 msgid "BIC (SWIFT)"
 msgstr "BIC (SWIFT)"
 
-#: models.py:20
+#: models.py:15
 msgid "accounts"
 msgstr "účty"
 
-#: models.py:28
+#: models.py:23
 msgid "statement"
 msgstr "výpis"
 
-#: models.py:29
+#: models.py:24
 msgid "from date"
 msgstr "od data"
 
-#: models.py:30
+#: models.py:25
 msgid "to date"
 msgstr "do data"
 
-#: models.py:39
+#: models.py:30
 msgid "account statements"
 msgstr "výpisy účtu"
 
-#: models.py:47
+#: models.py:38
 msgid "transaction id"
 msgstr "identifikátor transakce"
 
-#: models.py:48
+#: models.py:39
 msgid "entry date"
 msgstr "datum zadání"
 
-#: models.py:49
+#: models.py:40
 msgid "accounted date"
 msgstr "datum zaúčtování"
 
-#: models.py:50
+#: models.py:41
 msgid "remote account number"
 msgstr "číslo protiúčtu"
 
-#: models.py:51
+#: models.py:42
 msgid "remote account name"
 msgstr "název protiúčtu"
 
-#: models.py:52
+#: models.py:43
 msgid "amount"
 msgstr "částka"
 
-#: models.py:53
+#: models.py:44
 msgid "variable symbol"
 msgstr "variabilní symbol"
 
-#: models.py:54
+#: models.py:45
 msgid "constant symbol"
 msgstr "konstantní symbol"
 
-#: models.py:55
+#: models.py:46
 msgid "specific symbol"
 msgstr "specifický symbol"
 
-#: models.py:56
+#: models.py:47
 msgid "description for sender"
 msgstr "popis pro odesilatele"
 
-#: models.py:57
+#: models.py:48
 msgid "description for recipient"
 msgstr "popis pro příjemce"
 
-#: models.py:62
+#: models.py:53
 msgid "transaction"
 msgstr "transakce"
 
-#: models.py:63
+#: models.py:54
 msgid "transactions"
 msgstr "transakce"
