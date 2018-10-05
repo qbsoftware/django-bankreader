@@ -7,6 +7,7 @@ from .base import BaseReader
 
 
 class CsvReader(BaseReader):
+    label = 'CSV'
     column_mapping = {}
     date_format = '%Y-%m-%d'
     delimiter = ','

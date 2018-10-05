@@ -2,11 +2,9 @@ import datetime
 import decimal
 from zipfile import BadZipFile, ZipFile
 
-from . import register_reader
 from .base import BaseReader
 
 
-@register_reader
 class BestReader(BaseReader):
     label = 'Best'
     encoding = 'cp1250'

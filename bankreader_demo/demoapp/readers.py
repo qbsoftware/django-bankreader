@@ -1,6 +1,11 @@
 from bankreader.readers import register_reader
-from bankreader.readers.best import BestReader  # noqa
+from bankreader.readers.best import BestReader
 from bankreader.readers.csv import CsvReader
+
+
+@register_reader
+class KbBestReader(BestReader):
+    label = 'Komerční banka Best'
 
 
 @register_reader
