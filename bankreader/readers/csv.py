@@ -19,20 +19,24 @@ class CsvReader(BaseReader):
     def __init__(self):
         self.decimal_cleaner = re.compile(r'[^0-9-%s]' % self.decimal_separator)
 
-    def read(self, file_path):
-        with open(file_path, encoding=self.encoding) as csvfile:
-            column_mapping = {}
-            for row in csv.reader(csvfile, delimiter=self.delimiter, quotechar=self.quotechar):
-                if not column_mapping:
-                    try:
-                        column_mapping = {key: row.index(csv_key) for csv_key, key in self.column_mapping.items()}
-                    except ValueError:
-                        pass
-                    continue
-                yield {
-                    key: self.get_value(key, row[column_mapping[key]])
-                    for key in column_mapping
-                }
+    def read(self, statement_file):
+        column_mapping = {}
+        csv_reader = csv.reader(
+            (row.decode(self.encoding) for row in statement_file),
+            delimiter=self.delimiter,
+            quotechar=self.quotechar,
+        )
+        for row in csv_reader:
+            if not column_mapping:
+                try:
+                    column_mapping = {key: row.index(csv_key) for csv_key, key in self.column_mapping.items()}
+                except ValueError:
+                    pass
+                continue
+            yield {
+                key: self.get_value(key, row[column_mapping[key]])
+                for key in column_mapping
+            }
 
     def get_value(self, key, value):
         if key in ('accounted_date', 'entry_date'):
