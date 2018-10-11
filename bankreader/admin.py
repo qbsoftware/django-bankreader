@@ -110,6 +110,8 @@ class AccountStatementAdmin(AccountNamePlusRadOnlyMixin, admin.ModelAdmin):
                     msg = _('Failed to read transaction data in format {}.').format(reader.label)
                     logger.exception(msg)
                     raise ValidationError(msg)
+                if not self.transactions_data:
+                    raise ValidationError(_('The account statement doesn\'t contain any transaction data.'))
                 self.instance.from_date = min(td['accounted_date'] for td in self.transactions_data)
                 self.instance.to_date = max(td['accounted_date'] for td in self.transactions_data)
 
