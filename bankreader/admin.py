@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import traceback
+import logging
 
 import django
 from django import forms
@@ -13,6 +13,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from .models import Account, AccountStatement, Transaction
 from .readers import get_reader_choices, readers
+
+logger = logging.getLogger(__name__)
 
 
 class AmountFieldListFilter(admin.FieldListFilter):
@@ -105,10 +107,9 @@ class AccountStatementAdmin(AccountNamePlusRadOnlyMixin, admin.ModelAdmin):
                 try:
                     self.transactions_data = tuple(reader.read(self.cleaned_data['statement'].file))
                 except Exception as e:
-                    traceback.print_exc()
-                    raise ValidationError(
-                        _('Failed to read transaction data in format {}.').format(reader.label)
-                    )
+                    msg = _('Failed to read transaction data in format {}.').format(reader.label)
+                    logger.exception(msg)
+                    raise ValidationError(msg)
                 self.instance.from_date = min(td['accounted_date'] for td in self.transactions_data)
                 self.instance.to_date = max(td['accounted_date'] for td in self.transactions_data)
 
