@@ -13,13 +13,12 @@ class BestReader(BaseReader):
         try:
             zip_file = ZipFile(statement_file)
         except BadZipFile:
-            for transaction in self._read(statement_file):
-                yield transaction
+            statement_file.seek(0)
+            return self._read(statement_file)
         else:
             for zip_info in zip_file.filelist:
                 with zip_file.open(zip_info) as okmfile:
-                    for transaction in self._read(okmfile):
-                        yield transaction
+                    return self._read(okmfile)
 
     def _read(self, okmfile):
         for row in okmfile:
