@@ -18,7 +18,8 @@ class BestReader(BaseReader):
         else:
             for zip_info in zip_file.filelist:
                 with zip_file.open(zip_info) as okmfile:
-                    return self._read(okmfile)
+                    for transaction in self._read(okmfile):
+                        yield transaction
 
     def _read(self, okmfile):
         for row in okmfile:
