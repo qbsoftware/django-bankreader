@@ -14,7 +14,8 @@ class BestReader(BaseReader):
             zip_file = ZipFile(statement_file)
         except BadZipFile:
             statement_file.seek(0)
-            return self._read(statement_file)
+            for transaction in self._read(statement_file):
+                yield transaction
         else:
             for zip_info in zip_file.filelist:
                 with zip_file.open(zip_info) as okmfile:
