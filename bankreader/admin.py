@@ -70,10 +70,10 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ('name', 'iban', 'bic')
 
 
-class AccountNamePlusRadOnlyMixin:
+class AccountNamePlusReadOnlyMixin:
     # account name
     def get_queryset(self, request):
-        return super(AccountNamePlusRadOnlyMixin, self).get_queryset(request).select_related('account')
+        return super(AccountNamePlusReadOnlyMixin, self).get_queryset(request).select_related('account')
 
     def account_name(self, obj):
         return obj.account.name
@@ -93,7 +93,7 @@ class AccountNamePlusRadOnlyMixin:
 
 
 @admin.register(AccountStatement)
-class AccountStatementAdmin(AccountNamePlusRadOnlyMixin, admin.ModelAdmin):
+class AccountStatementAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
     list_display = ('account_name', 'statement', 'from_date', 'to_date')
     list_filter = ('account',)
 
@@ -128,7 +128,7 @@ class AccountStatementAdmin(AccountNamePlusRadOnlyMixin, admin.ModelAdmin):
 
 
 @admin.register(Transaction)
-class TransactionAdmin(AccountNamePlusRadOnlyMixin, admin.ModelAdmin):
+class TransactionAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
     date_hierarchy = 'accounted_date'
     list_display = tuple(
         ('account_name' if f.name == 'account' else f.name) for f in Transaction._meta.fields
