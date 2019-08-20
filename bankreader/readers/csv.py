@@ -19,13 +19,9 @@ class CsvReader(BaseReader):
     def __init__(self):
         self.decimal_cleaner = re.compile(r'[^0-9-%s]' % self.decimal_separator)
 
-    def read(self, statement_file):
+    def read_transactions(self, rows):
         column_mapping = {}
-        csv_reader = csv.reader(
-            (row.decode(self.encoding) for row in statement_file),
-            delimiter=self.delimiter,
-            quotechar=self.quotechar,
-        )
+        csv_reader = csv.reader(rows, delimiter=self.delimiter, quotechar=self.quotechar)
         for row in csv_reader:
             if not column_mapping:
                 try:

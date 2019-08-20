@@ -94,7 +94,7 @@ class AccountNamePlusReadOnlyMixin:
 
 @admin.register(AccountStatement)
 class AccountStatementAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
-    list_display = ('account_name', 'statement', 'from_date', 'to_date')
+    list_display = ('statement', 'account_name', 'from_date', 'to_date')
     list_filter = ('account',)
 
     class form(forms.ModelForm):
@@ -105,7 +105,7 @@ class AccountStatementAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
             if self.cleaned_data['reader'] and self.cleaned_data['statement']:
                 reader = readers[self.cleaned_data['reader']]
                 try:
-                    self.transactions_data = tuple(reader.read(self.cleaned_data['statement'].file))
+                    self.transactions_data = tuple(reader.read_archive(self.cleaned_data['statement'].file))
                 except Exception as e:
                     msg = _('Failed to read transaction data in format {}.').format(reader.label)
                     logger.exception(msg)

@@ -34,8 +34,8 @@ class AccountStatement(models.Model):
 
 
 class Transaction(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name=_('account'))
     transaction_id = models.CharField(_('transaction id'), max_length=256)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name=_('account'))
     entry_date = models.DateField(_('entry date'))
     accounted_date = models.DateField(_('accounted date'))
     remote_account_number = models.CharField(_('remote account number'), max_length=64)

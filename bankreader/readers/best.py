@@ -1,6 +1,5 @@
 import datetime
 import decimal
-from zipfile import BadZipFile, ZipFile
 
 from .base import BaseReader
 
@@ -9,26 +8,9 @@ class BestReader(BaseReader):
     label = 'Best'
     encoding = 'cp1250'
 
-    def read(self, statement_file):
-        try:
-            zip_file = ZipFile(statement_file)
-        except BadZipFile:
-            statement_file.seek(0)
-            for transaction in self._read(statement_file):
-                yield transaction
-        else:
-            for zip_info in zip_file.filelist:
-                with zip_file.open(zip_info) as okmfile:
-                    for transaction in self._read(okmfile):
-                        yield transaction
-
-    def _read(self, okmfile):
-        for row in okmfile:
-            if type(row) == bytes:
-                row = row.decode(self.encoding)
-            prefix = row[:2]
-            if prefix == '52':
-                # process transaction
+    def read_transactions(self, rows):
+        for row in rows:
+            if row[:2] == '52':
                 yield {
                     'transaction_id': row[86:117].strip(),
                     'entry_date': datetime.datetime.strptime(row[167:175], '%Y%m%d').date(),
