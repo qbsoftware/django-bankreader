@@ -146,9 +146,6 @@ class TransactionAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for related_object in Transaction._meta.related_objects:
-            for attr in dir(related_object):
-                if not attr.startswith('_'):
-                    print((attr, getattr(related_object, attr)))
             changelist_url = reverse('admin:{}_{}_changelist'.format(
                 related_object.related_model._meta.app_label,
                 related_object.related_model._meta.model_name,
