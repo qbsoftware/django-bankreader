@@ -6,9 +6,12 @@ import logging
 import django
 from django import forms
 from django.contrib import admin
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse_lazy as reverse
 from django.db import transaction
 from django.db.utils import IntegrityError
+from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
 from .models import Account, AccountStatement, Transaction
@@ -133,12 +136,60 @@ class TransactionAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
     list_display = tuple(
         ('account_name' if f.name == 'account' else f.name) for f in Transaction._meta.fields
     )[1:] + tuple(
-        r.name for r in Transaction._meta.related_objects
+        r.name + '_link' for r in Transaction._meta.related_objects
     )
     list_filter = ('account', ('amount', AmountFieldListFilter)) + tuple(
         (r.name, IdentifiedFieldListFilter)
         for r in Transaction._meta.related_objects
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for related_object in Transaction._meta.related_objects:
+            for attr in dir(related_object):
+                if not attr.startswith('_'):
+                    print((attr, getattr(related_object, attr)))
+            changelist_url = reverse('admin:{}_{}_changelist'.format(
+                related_object.related_model._meta.app_label,
+                related_object.related_model._meta.model_name,
+            ))
+            add_url = reverse('admin:{}_{}_add'.format(
+                related_object.related_model._meta.app_label,
+                related_object.related_model._meta.model_name,
+            ))
+
+            def related_object_link(obj):
+                try:
+                    related_obj = getattr(obj, related_object.name)
+                except related_object.related_model.DoesNotExist:
+                    related_obj = None
+                if related_obj:
+                    return format_html(
+                        '<a href="{changelist_url}?{remote_name}__id__exact={obj_id}">{text}</a>',
+                        changelist_url=changelist_url,
+                        remote_name=related_object.remote_field.name,
+                        obj_id=obj.id,
+                        text=getattr(obj, related_object.name),
+                    )
+                else:
+                    return format_html(
+                        '<a href="{add_url}?{remote_name}={obj_id}" title="{title}">'
+                        '<img src="{icon}" alt="+"/></a>',
+                        add_url=add_url,
+                        remote_name=related_object.remote_field.name,
+                        obj_id=obj.id,
+                        title=_('add'),
+                        icon=static('admin/img/icon-addlink.svg'),
+                    )
+            related_object_link.allow_tags = True
+            related_object_link.short_description = related_object.related_model._meta.verbose_name
+        setattr(self, related_object.name + '_link', related_object_link)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        for related_object in Transaction._meta.related_objects:
+            qs = qs.select_related(related_object.name)
+        return qs
 
     def has_add_permission(self, request):
         return False
