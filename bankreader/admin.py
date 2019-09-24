@@ -105,7 +105,7 @@ class AccountStatementAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
         reader = forms.ChoiceField(label=_('file format'), choices=get_reader_choices())
 
         def clean(self):
-            if self.cleaned_data['reader'] and self.cleaned_data['statement']:
+            if self.cleaned_data.get('reader') and self.cleaned_data.get('statement'):
                 reader = readers[self.cleaned_data['reader']]
                 try:
                     self.transactions_data = tuple(reader.read_archive(self.cleaned_data['statement'].file))
