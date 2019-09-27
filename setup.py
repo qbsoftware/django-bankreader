@@ -10,7 +10,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
 
 setup(
     name='django-bankreader',
-    version='0.5.1',
+    version='0.5.2',
     description='Pluggable django application for reading and processing various formats of bank account statements',
     long_description=long_description,
     author='Jakub Dorňák',
