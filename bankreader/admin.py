@@ -9,13 +9,14 @@ from django.contrib import admin
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import Count
 from django.db.utils import IntegrityError
 from django.urls import reverse_lazy as reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from .models import Account, AccountStatement, Transaction
-from .readers import get_reader_choices, readers
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class AmountFieldListFilter(admin.FieldListFilter):
         self.lookup_kwarg_debit = '%s__lt' % field_path
         self.lookup_val_credit = params.get(self.lookup_kwarg_credit)
         self.lookup_val_debit = params.get(self.lookup_kwarg_debit)
-        super(AmountFieldListFilter, self).__init__(field, request, params, model, model_admin, field_path)
+        super().__init__(field, request, params, model, model_admin, field_path)
 
     def expected_parameters(self):
         return [self.lookup_kwarg_credit, self.lookup_kwarg_debit]
@@ -70,19 +71,26 @@ class IdentifiedFieldListFilter(admin.RelatedFieldListFilter):
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
-    list_display = ('name', 'iban', 'bic')
+    list_display = ('name', 'iban', 'bic', 'account_statements_link')
 
-
-class AccountNamePlusReadOnlyMixin:
-    # account name
     def get_queryset(self, request):
-        return super(AccountNamePlusReadOnlyMixin, self).get_queryset(request).select_related('account')
+        return super().get_queryset(request).annotate(
+            account_statements_count=Count('account_statements')
+        )
 
-    def account_name(self, obj):
-        return obj.account.name
-    account_name.short_description = _('account')
-    account_name.admin_order_field = 'account__name'
+    account_statement_changelist = reverse('admin:bankreader_accountstatement_changelist')
 
+    def account_statements_link(self, obj):
+        return mark_safe('<a href="{url}?account__id__exact={account_id}">{count}</a>'.format(
+            url=self.account_statement_changelist,
+            account_id=obj.id,
+            count=obj.account_statements_count,
+        ))
+    account_statements_link.short_description = _('account statements')
+    account_statements_link.admin_order_field = 'account_statements_count'
+
+
+class ReadOnlyMixin:
     # read only
     if django.VERSION > (2,):
         def has_change_permission(self, request, obj=None):
@@ -96,20 +104,42 @@ class AccountNamePlusReadOnlyMixin:
 
 
 @admin.register(AccountStatement)
-class AccountStatementAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
-    list_display = ('statement', 'account_name', 'from_date', 'to_date')
+class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
+    list_display = ('id', 'statement', 'account_name', 'from_date', 'to_date', 'transactions_link')
     list_filter = ('account',)
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('account').annotate(
+            transactions_count=Count('transactions')
+        )
+
+    def account_name(self, obj):
+        return obj.account.name
+    account_name.short_description = _('account')
+    account_name.admin_order_field = 'account__name'
+
+    transaction_changelist = reverse('admin:bankreader_transaction_changelist')
+
+    def transactions_link(self, obj):
+        return mark_safe('<a href="{url}?account_statement__id__exact={account_statement_id}">{count}</a>'.format(
+            url=self.transaction_changelist,
+            account_statement_id=obj.id,
+            count=obj.transactions_count,
+        ))
+    transactions_link.short_description = _('transactions')
+    transactions_link.admin_order_field = 'transactions_count'
 
     class form(forms.ModelForm):
         statement = forms.FileField(label=_('account statement'))
-        reader = forms.ChoiceField(label=_('file format'), choices=get_reader_choices())
 
         def clean(self):
-            if self.cleaned_data.get('reader') and self.cleaned_data.get('statement'):
-                reader = readers[self.cleaned_data['reader']]
+            account = self.cleaned_data.get('account')
+            statement = self.cleaned_data.get('statement')
+            if account and account.reader and statement:
+                reader = account.get_reader()
                 try:
-                    self.transactions_data = tuple(reader.read_archive(self.cleaned_data['statement'].file))
-                except Exception as e:
+                    self.transactions_data = tuple(reader.read_archive(statement.file))
+                except Exception:
                     msg = _('Failed to read transaction data in format {}.').format(reader.label)
                     logger.exception(msg)
                     raise ValidationError(msg)
@@ -120,28 +150,44 @@ class AccountStatementAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
 
         def save(self, commit=True):
             with transaction.atomic():
-                instance = super(AccountStatementAdmin.form, self).save(commit)
+                instance = super().save(commit)
+                instance.save()
                 for transaction_data in self.transactions_data:
                     try:
                         with transaction.atomic():
-                            Transaction.objects.create(account=self.instance.account, **transaction_data)
+                            Transaction.objects.create(
+                                account=instance.account,
+                                account_statement=instance,
+                                **transaction_data
+                            )
                     except IntegrityError:
                         pass
             return instance
 
 
 @admin.register(Transaction)
-class TransactionAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
+class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
     date_hierarchy = 'accounted_date'
     list_display = tuple(
-        ('account_name' if f.name == 'account' else f.name) for f in Transaction._meta.fields
+        ('statement' if f.name == 'account_statement' else f.name) for f in Transaction._meta.fields
     )[1:] + tuple(
         r.name + '_link' for r in Transaction._meta.related_objects
     )
-    list_filter = ('account', ('amount', AmountFieldListFilter)) + tuple(
+    list_filter = ('account_statement__account', ('amount', AmountFieldListFilter)) + tuple(
         (r.name, IdentifiedFieldListFilter)
         for r in Transaction._meta.related_objects
     )
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).select_related('account', 'account_statement')
+        for related_object in Transaction._meta.related_objects:
+            qs = qs.select_related(related_object.name)
+        return qs
+
+    def statement(self, obj):
+        return obj.account_statement.statement
+    statement.short_description = _('account statement')
+    statement.admin_order_field = 'account_statement__statement'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -181,12 +227,6 @@ class TransactionAdmin(AccountNamePlusReadOnlyMixin, admin.ModelAdmin):
             related_object_link.allow_tags = True
             related_object_link.short_description = related_object.related_model._meta.verbose_name
         setattr(self, related_object.name + '_link', related_object_link)
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        for related_object in Transaction._meta.related_objects:
-            qs = qs.select_related(related_object.name)
-        return qs
 
     def has_add_permission(self, request):
         return False

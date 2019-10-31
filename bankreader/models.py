@@ -4,11 +4,15 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from localflavor.generic.models import BICField, IBANField
 
+from .readers import get_reader_choices, readers
+
 
 class Account(models.Model):
     name = models.CharField(_('account name'), max_length=150, unique=True)
     iban = IBANField(_('IBAN'), blank=True, null=True)
     bic = BICField(_('BIC (SWIFT)'), blank=True, null=True)
+    reader = models.CharField(_('account statement format'), blank=True, choices=get_reader_choices(),
+                              max_length=150, null=True)
 
     class Meta:
         verbose_name = _('account')
@@ -17,9 +21,13 @@ class Account(models.Model):
     def __str__(self):
         return self.name
 
+    def get_reader(self):
+        return readers.get(self.reader)
+
 
 class AccountStatement(models.Model):
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name=_('account'))
+    account = models.ForeignKey(Account, limit_choices_to={'reader__isnull': False}, on_delete=models.CASCADE,
+                                related_name='account_statements', verbose_name=_('account'))
     statement = models.CharField(_('statement'), max_length=256)
     from_date = models.DateField(_('from date'), editable=False)
     to_date = models.DateField(_('to date'), editable=False)
@@ -35,6 +43,8 @@ class AccountStatement(models.Model):
 
 class Transaction(models.Model):
     transaction_id = models.CharField(_('transaction id'), max_length=256)
+    account_statement = models.ForeignKey(AccountStatement, on_delete=models.CASCADE,
+                                          related_name='transactions', verbose_name=_('account statement'))
     account = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name=_('account'))
     entry_date = models.DateField(_('entry date'))
     accounted_date = models.DateField(_('accounted date'))
