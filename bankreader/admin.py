@@ -149,20 +149,23 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
                 self.instance.to_date = max(td['accounted_date'] for td in self.transactions_data)
 
         def save(self, commit=True):
-            with transaction.atomic():
-                instance = super().save(commit)
-                instance.save()
-                for transaction_data in self.transactions_data:
-                    try:
-                        with transaction.atomic():
-                            Transaction.objects.create(
-                                account=instance.account,
-                                account_statement=instance,
-                                **transaction_data
-                            )
-                    except IntegrityError:
-                        pass
-            return instance
+            if hasattr(self, 'transactions_data'):
+                with transaction.atomic():
+                    instance = super().save(commit)
+                    instance.save()
+                    for transaction_data in self.transactions_data:
+                        try:
+                            with transaction.atomic():
+                                Transaction.objects.create(
+                                    account=instance.account,
+                                    account_statement=instance,
+                                    **transaction_data
+                                )
+                        except IntegrityError:
+                            pass
+                return instance
+            else:
+                return super().save(commit)
 
 
 @admin.register(Transaction)
