@@ -6,11 +6,11 @@ import logging
 import django
 from django import forms
 from django.contrib import admin
-from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Count
 from django.db.utils import IntegrityError
+from django.templatetags.static import static
 from django.urls import reverse_lazy as reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -74,18 +74,19 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ('name', 'iban', 'bic', 'account_statements_link')
 
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(
-            account_statements_count=Count('account_statements')
-        )
+        return super().get_queryset(request).annotate(account_statements_count=Count('account_statements'))
 
     account_statement_changelist = reverse('admin:bankreader_accountstatement_changelist')
 
     def account_statements_link(self, obj):
-        return mark_safe('<a href="{url}?account__id__exact={account_id}">{count}</a>'.format(
-            url=self.account_statement_changelist,
-            account_id=obj.id,
-            count=obj.account_statements_count,
-        ))
+        return mark_safe(
+            '<a href="{url}?account__id__exact={account_id}">{count}</a>'.format(
+                url=self.account_statement_changelist,
+                account_id=obj.id,
+                count=obj.account_statements_count,
+            )
+        )
+
     account_statements_link.short_description = _('account statements')
     account_statements_link.admin_order_field = 'account_statements_count'
 
@@ -93,14 +94,14 @@ class AccountAdmin(admin.ModelAdmin):
 class ReadOnlyMixin:
     # read only
     if django.VERSION > (2,):
+
         def has_change_permission(self, request, obj=None):
             return False
+
     else:
+
         def get_readonly_fields(self, request, obj=None):
-            return tuple(
-                f.name for f in self.model._meta.fields
-                if not f.primary_key
-            ) if obj else ()
+            return tuple(f.name for f in self.model._meta.fields if not f.primary_key) if obj else ()
 
 
 @admin.register(AccountStatement)
@@ -109,23 +110,27 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
     list_filter = ('account',)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('account').annotate(
-            transactions_count=Count('transactions')
+        return (
+            super().get_queryset(request).select_related('account').annotate(transactions_count=Count('transactions'))
         )
 
     def account_name(self, obj):
         return obj.account.name
+
     account_name.short_description = _('account')
     account_name.admin_order_field = 'account__name'
 
     transaction_changelist = reverse('admin:bankreader_transaction_changelist')
 
     def transactions_link(self, obj):
-        return mark_safe('<a href="{url}?account_statement__id__exact={account_statement_id}">{count}</a>'.format(
-            url=self.transaction_changelist,
-            account_statement_id=obj.id,
-            count=obj.transactions_count,
-        ))
+        return mark_safe(
+            '<a href="{url}?account_statement__id__exact={account_statement_id}">{count}</a>'.format(
+                url=self.transaction_changelist,
+                account_statement_id=obj.id,
+                count=obj.transactions_count,
+            )
+        )
+
     transactions_link.short_description = _('transactions')
     transactions_link.admin_order_field = 'transactions_count'
 
@@ -157,9 +162,7 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
                         try:
                             with transaction.atomic():
                                 Transaction.objects.create(
-                                    account=instance.account,
-                                    account_statement=instance,
-                                    **transaction_data
+                                    account=instance.account, account_statement=instance, **transaction_data
                                 )
                         except IntegrityError:
                             pass
@@ -171,14 +174,11 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
 @admin.register(Transaction)
 class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
     date_hierarchy = 'accounted_date'
-    list_display = tuple(
-        ('statement' if f.name == 'account_statement' else f.name) for f in Transaction._meta.fields
-    )[1:] + tuple(
-        r.name + '_link' for r in Transaction._meta.related_objects
-    )
+    list_display = tuple(('statement' if f.name == 'account_statement' else f.name) for f in Transaction._meta.fields)[
+        1:
+    ] + tuple(r.name + '_link' for r in Transaction._meta.related_objects)
     list_filter = ('account_statement__account', ('amount', AmountFieldListFilter)) + tuple(
-        (r.name, IdentifiedFieldListFilter)
-        for r in Transaction._meta.related_objects
+        (r.name, IdentifiedFieldListFilter) for r in Transaction._meta.related_objects
     )
 
     def get_queryset(self, request):
@@ -189,20 +189,25 @@ class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
 
     def statement(self, obj):
         return obj.account_statement.statement
+
     statement.short_description = _('account statement')
     statement.admin_order_field = 'account_statement__statement'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for related_object in Transaction._meta.related_objects:
-            changelist_url = reverse('admin:{}_{}_changelist'.format(
-                related_object.related_model._meta.app_label,
-                related_object.related_model._meta.model_name,
-            ))
-            add_url = reverse('admin:{}_{}_add'.format(
-                related_object.related_model._meta.app_label,
-                related_object.related_model._meta.model_name,
-            ))
+            changelist_url = reverse(
+                'admin:{}_{}_changelist'.format(
+                    related_object.related_model._meta.app_label,
+                    related_object.related_model._meta.model_name,
+                )
+            )
+            add_url = reverse(
+                'admin:{}_{}_add'.format(
+                    related_object.related_model._meta.app_label,
+                    related_object.related_model._meta.model_name,
+                )
+            )
 
             def related_object_link(obj):
                 try:
@@ -219,14 +224,14 @@ class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
                     )
                 else:
                     return format_html(
-                        '<a href="{add_url}?{remote_name}={obj_id}" title="{title}">'
-                        '<img src="{icon}" alt="+"/></a>',
+                        '<a href="{add_url}?{remote_name}={obj_id}" title="{title}">' '<img src="{icon}" alt="+"/></a>',
                         add_url=add_url,
                         remote_name=related_object.remote_field.name,
                         obj_id=obj.id,
                         title=_('add'),
                         icon=static('admin/img/icon-addlink.svg'),
                     )
+
             related_object_link.allow_tags = True
             related_object_link.short_description = related_object.related_model._meta.verbose_name
         setattr(self, related_object.name + '_link', related_object_link)

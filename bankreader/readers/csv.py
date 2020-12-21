@@ -29,10 +29,7 @@ class CsvReader(BaseReader):
                 except ValueError:
                     pass
                 continue
-            yield {
-                key: self.get_value(key, row[column_mapping[key]])
-                for key in column_mapping
-            }
+            yield {key: self.get_value(key, row[column_mapping[key]]) for key in column_mapping}
 
     def get_value(self, key, value):
         if key in ('accounted_date', 'entry_date'):

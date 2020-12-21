@@ -11,8 +11,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
@@ -20,8 +19,23 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=150, unique=True, verbose_name='account name')),
-                ('iban', localflavor.generic.models.IBANField(blank=True, include_countries=None, max_length=34, null=True, use_nordea_extensions=False, verbose_name='IBAN')),
-                ('bic', localflavor.generic.models.BICField(blank=True, max_length=11, null=True, verbose_name='BIC (SWIFT)')),
+                (
+                    'iban',
+                    localflavor.generic.models.IBANField(
+                        blank=True,
+                        include_countries=None,
+                        max_length=34,
+                        null=True,
+                        use_nordea_extensions=False,
+                        verbose_name='IBAN',
+                    ),
+                ),
+                (
+                    'bic',
+                    localflavor.generic.models.BICField(
+                        blank=True, max_length=11, null=True, verbose_name='BIC (SWIFT)'
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'account',
@@ -35,7 +49,12 @@ class Migration(migrations.Migration):
                 ('statement', models.CharField(max_length=256, verbose_name='statement')),
                 ('from_date', models.DateField(editable=False, verbose_name='from date')),
                 ('to_date', models.DateField(editable=False, verbose_name='to date')),
-                ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bankreader.Account', verbose_name='account')),
+                (
+                    'account',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='bankreader.Account', verbose_name='account'
+                    ),
+                ),
             ],
             options={
                 'ordering': ('from_date',),
@@ -56,7 +75,12 @@ class Migration(migrations.Migration):
                 ('specific_symbol', models.BigIntegerField(default=0, verbose_name='specific symbol')),
                 ('sender_description', models.CharField(max_length=256, verbose_name='description for sender')),
                 ('recipient_description', models.CharField(max_length=256, verbose_name='description for recipient')),
-                ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bankreader.Account', verbose_name='account')),
+                (
+                    'account',
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to='bankreader.Account', verbose_name='account'
+                    ),
+                ),
             ],
             options={
                 'verbose_name': 'transaction',

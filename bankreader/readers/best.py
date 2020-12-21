@@ -15,7 +15,8 @@ class BestReader(BaseReader):
                     'transaction_id': row[86:117].strip(),
                     'entry_date': datetime.datetime.strptime(row[167:175], '%Y%m%d').date(),
                     'accounted_date': datetime.datetime.strptime(row[175:183], '%Y%m%d').date(),
-                    'remote_account_number': '%s-%s/%s' % (
+                    'remote_account_number': '%s-%s/%s'
+                    % (
                         row[23:29],
                         row[29:39],
                         row[42:46] if row[39:42] == '000' else row[39:46],

@@ -10,8 +10,7 @@ class BaseReader:
         raise NotImplementedError()
 
     def read_archive(self, statement_file):
-        ''' Try to unpack ZIP archive and call read() for each file.
-        '''
+        """Try to unpack ZIP archive and call read() for each file."""
         try:
             zip_file = ZipFile(statement_file)
         except BadZipFile:
@@ -28,10 +27,7 @@ class BaseReader:
                         yield transaction
 
     def _decode(self, rows):
-        return (
-            row.decode(self.encoding) if type(row) == bytes else row
-            for row in rows
-        )
+        return (row.decode(self.encoding) if type(row) == bytes else row for row in rows)
 
     def read_transactions(self, rows):
         raise NotImplementedError()

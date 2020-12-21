@@ -23,7 +23,8 @@ class GpcReader(BaseReader):
                     transaction = {
                         'transaction_id': row[35:48],
                         'accounted_date': datetime.datetime.strptime(row[122:128], '%d%m%y').date(),
-                        'remote_account_number': '%s-%s/%s' % (
+                        'remote_account_number': '%s-%s/%s'
+                        % (
                             row[19:25],
                             row[25:35],
                             row[73:77],

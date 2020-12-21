@@ -1,0 +1,57 @@
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+
+[tool.flake8]
+exclude = "bankreader/migrations"
+max-line-length = 120
+
+[tool.isort]
+combine_as_imports = true
+ensure_newline_before_comments = true
+force_grid_wrap = 0
+include_trailing_comma = true
+line_length = 120
+multi_line_output = 3
+profile = "black"
+skip_glob = "*migrations*"
+use_parentheses = true
+
+[tool.poetry]
+name = "django-bankreader"
+version = "0.6.1"
+description = "Pluggable django application for reading and processing various formats of bank account statements"
+authors = ["Jakub Dorňák <jakub.dornak@misli.cz>"]
+license = "BSD-3-Clause"
+packages = [
+    { include = "bankreader" },
+    { include = "bankreader_demo" },
+]
+readme = "README.rst"
+repository = "https://github.com/misli/django-bankreader"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Web Environment",
+    "Framework :: Django",
+    "Framework :: Django :: 3.1",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: Czech",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.6,<4"
+Django = ">=3.0,<4"
+
+[tool.poetry.dev-dependencies]
+black = "^20.8b1"
+flake8 = "^3.8.4"
+isort = "^5.6.4"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
