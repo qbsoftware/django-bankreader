@@ -171,8 +171,7 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
                 return super().save(commit)
 
 
-@admin.register(Transaction)
-class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
+class TransactionBaseAdmin(ReadOnlyMixin, admin.ModelAdmin):
     date_hierarchy = 'accounted_date'
     list_display = tuple(('statement' if f.name == 'account_statement' else f.name) for f in Transaction._meta.fields)[
         1:
@@ -193,48 +192,59 @@ class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
     statement.short_description = _('account statement')
     statement.admin_order_field = 'account_statement__statement'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for related_object in Transaction._meta.related_objects:
-            changelist_url = reverse(
-                'admin:{}_{}_changelist'.format(
-                    related_object.related_model._meta.app_label,
-                    related_object.related_model._meta.model_name,
-                )
-            )
-            add_url = reverse(
-                'admin:{}_{}_add'.format(
-                    related_object.related_model._meta.app_label,
-                    related_object.related_model._meta.model_name,
-                )
-            )
-
-            def related_object_link(obj):
-                try:
-                    related_obj = getattr(obj, related_object.name)
-                except related_object.related_model.DoesNotExist:
-                    related_obj = None
-                if related_obj:
-                    return format_html(
-                        '<a href="{changelist_url}?{remote_name}__id__exact={obj_id}">{text}</a>',
-                        changelist_url=changelist_url,
-                        remote_name=related_object.remote_field.name,
-                        obj_id=obj.id,
-                        text=getattr(obj, related_object.name),
-                    )
-                else:
-                    return format_html(
-                        '<a href="{add_url}?{remote_name}={obj_id}" title="{title}">' '<img src="{icon}" alt="+"/></a>',
-                        add_url=add_url,
-                        remote_name=related_object.remote_field.name,
-                        obj_id=obj.id,
-                        title=_('add'),
-                        icon=static('admin/img/icon-addlink.svg'),
-                    )
-
-            related_object_link.allow_tags = True
-            related_object_link.short_description = related_object.related_model._meta.verbose_name
-        setattr(self, related_object.name + '_link', related_object_link)
-
     def has_add_permission(self, request):
         return False
+
+
+def _get_related_object_link(related_object):
+    changelist_url = reverse(
+        'admin:{}_{}_changelist'.format(
+            related_object.related_model._meta.app_label,
+            related_object.related_model._meta.model_name,
+        )
+    )
+    add_url = reverse(
+        'admin:{}_{}_add'.format(
+            related_object.related_model._meta.app_label,
+            related_object.related_model._meta.model_name,
+        )
+    )
+
+    def related_object_link(self, obj):
+        try:
+            related_obj = getattr(obj, related_object.name)
+        except related_object.related_model.DoesNotExist:
+            related_obj = None
+        if related_obj:
+            return format_html(
+                '<a href="{changelist_url}?{remote_name}__id__exact={obj_id}">{text}</a>',
+                changelist_url=changelist_url,
+                remote_name=related_object.remote_field.name,
+                obj_id=obj.id,
+                text=getattr(obj, related_object.name),
+            )
+        else:
+            return format_html(
+                '<a href="{add_url}?{remote_name}={obj_id}" title="{title}">' '<img src="{icon}" alt="+"/></a>',
+                add_url=add_url,
+                remote_name=related_object.remote_field.name,
+                obj_id=obj.id,
+                title=_('add'),
+                icon=static('admin/img/icon-addlink.svg'),
+            )
+
+    related_object_link.allow_tags = True
+    related_object_link.short_description = related_object.related_model._meta.verbose_name
+    return related_object_link
+
+
+TransactionAdmin = admin.register(Transaction)(
+    type(
+        "TransactionAdmin",
+        (TransactionBaseAdmin,),
+        {
+            related_object.name + '_link': _get_related_object_link(related_object)
+            for related_object in Transaction._meta.related_objects
+        },
+    )
+)
