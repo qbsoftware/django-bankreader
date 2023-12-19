@@ -78,6 +78,7 @@ class AccountAdmin(admin.ModelAdmin):
 
     account_statement_changelist = reverse('admin:bankreader_accountstatement_changelist')
 
+    @admin.display(description=_('account statements'), ordering='account_statements_count')
     def account_statements_link(self, obj):
         return mark_safe(
             '<a href="{url}?account__id__exact={account_id}">{count}</a>'.format(
@@ -86,9 +87,6 @@ class AccountAdmin(admin.ModelAdmin):
                 count=obj.account_statements_count,
             )
         )
-
-    account_statements_link.short_description = _('account statements')
-    account_statements_link.admin_order_field = 'account_statements_count'
 
 
 class ReadOnlyMixin:
@@ -114,14 +112,13 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
             super().get_queryset(request).select_related('account').annotate(transactions_count=Count('transactions'))
         )
 
+    @admin.display(description=_('account'), ordering='account__name')
     def account_name(self, obj):
         return obj.account.name
 
-    account_name.short_description = _('account')
-    account_name.admin_order_field = 'account__name'
-
     transaction_changelist = reverse('admin:bankreader_transaction_changelist')
 
+    @admin.display(description=_('transactions'), ordering='transactions_count')
     def transactions_link(self, obj):
         return mark_safe(
             '<a href="{url}?account_statement__id__exact={account_statement_id}">{count}</a>'.format(
@@ -130,9 +127,6 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
                 count=obj.transactions_count,
             )
         )
-
-    transactions_link.short_description = _('transactions')
-    transactions_link.admin_order_field = 'transactions_count'
 
     class form(forms.ModelForm):
         statement = forms.FileField(label=_('account statement'))
@@ -186,11 +180,9 @@ class TransactionBaseAdmin(ReadOnlyMixin, admin.ModelAdmin):
             qs = qs.select_related(related_object.name)
         return qs
 
+    @admin.display(description=_('account statement'), ordering='account_statement__statement')
     def statement(self, obj):
         return obj.account_statement.statement
-
-    statement.short_description = _('account statement')
-    statement.admin_order_field = 'account_statement__statement'
 
     def has_add_permission(self, request):
         return False
@@ -210,6 +202,7 @@ def _get_related_object_link(related_object):
         )
     )
 
+    @admin.display(description=related_object.related_model._meta.verbose_name)
     def related_object_link(self, obj):
         try:
             related_obj = getattr(obj, related_object.name)
@@ -233,8 +226,6 @@ def _get_related_object_link(related_object):
                 icon=static('admin/img/icon-addlink.svg'),
             )
 
-    related_object_link.allow_tags = True
-    related_object_link.short_description = related_object.related_model._meta.verbose_name
     return related_object_link
 
 

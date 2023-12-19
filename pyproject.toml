@@ -33,7 +33,7 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Web Environment",
     "Framework :: Django",
-    "Framework :: Django :: 3.1",
+    "Framework :: Django :: 3",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: BSD License",
     "Natural Language :: Czech",
@@ -44,13 +44,18 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.6,<4"
+python = ">=3.7"
 Django = ">=3.0,<4"
+django-localflavor = "*"
+mt-940 = "*"
 
 [tool.poetry.dev-dependencies]
-black = "^20.8b1"
-flake8 = "^3.8.4"
-isort = "^5.6.4"
+black = "*"
+autoflake = "*"
+isort = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
