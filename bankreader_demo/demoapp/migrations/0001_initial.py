@@ -5,37 +5,67 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('bankreader', '0001_initial'),
+        ("bankreader", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Order',
+            name="Order",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=30)),
-                ('variable_symbol', models.CharField(max_length=10, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=30)),
+                ("variable_symbol", models.CharField(max_length=10, unique=True)),
             ],
             options={
-                'verbose_name': 'order',
-                'verbose_name_plural': 'orders',
+                "verbose_name": "order",
+                "verbose_name_plural": "orders",
             },
         ),
         migrations.CreateModel(
-            name='OrderPayment',
+            name="OrderPayment",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=20, verbose_name='amount')),
-                ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='demoapp.Order')),
-                ('transaction', models.OneToOneField(editable=False, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='identified_order_payment', to='bankreader.Transaction')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "amount",
+                    models.DecimalField(decimal_places=2, max_digits=20, verbose_name="amount"),
+                ),
+                (
+                    "order",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="demoapp.Order"),
+                ),
+                (
+                    "transaction",
+                    models.OneToOneField(
+                        editable=False,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="identified_order_payment",
+                        to="bankreader.Transaction",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'order payment',
-                'verbose_name_plural': 'order payments',
+                "verbose_name": "order payment",
+                "verbose_name_plural": "order payments",
             },
         ),
     ]

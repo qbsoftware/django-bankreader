@@ -1,33 +1,28 @@
-import io
+from typing import IO, TYPE_CHECKING, Iterable
 from zipfile import BadZipFile, ZipFile
+
+if TYPE_CHECKING:
+    from ..models import Transaction
 
 
 class BaseReader:
-    encoding = 'utf-8'
+    encoding = "utf-8"
 
     @property
-    def label(self):
+    def label(self) -> str:
         raise NotImplementedError()
 
-    def read_archive(self, statement_file):
+    def read_file(self, statement_file: IO) -> Iterable["Transaction"]:
         """Try to unpack ZIP archive and call read() for each file."""
         try:
             zip_file = ZipFile(statement_file)
         except BadZipFile:
-            try:
-                statement_file.seek(0)
-            except io.UnsupportedOperation:
-                pass
-            for transaction in self.read_transactions(self._decode(statement_file)):
-                yield transaction
+            statement_file.seek(0)
+            yield from self.read_transactions(statement_file)
         else:
             for zip_info in zip_file.filelist:
                 with zip_file.open(zip_info) as f:
-                    for transaction in self.read_transactions(self._decode(f)):
-                        yield transaction
+                    yield from self.read_file(f)
 
-    def _decode(self, rows):
-        return (row.decode(self.encoding) if type(row) == bytes else row for row in rows)
-
-    def read_transactions(self, rows):
+    def read_transactions(self, statement_file: IO) -> Iterable["Transaction"]:
         raise NotImplementedError()

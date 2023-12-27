@@ -2,25 +2,29 @@ import csv
 import datetime
 import decimal
 import re
+from typing import IO, Any, Dict, Iterable
+
+from bankreader.models import Transaction
 
 from .base import BaseReader
 
 
 class CsvReader(BaseReader):
-    label = 'CSV'
-    column_mapping = {}
-    date_format = '%Y-%m-%d'
-    delimiter = ','
+    label = "CSV"
+    column_mapping: Dict[str, str] = {}
+    date_format = "%Y-%m-%d"
+    delimiter = ","
     quotechar = '"'
-    encoding = 'utf-8'
-    decimal_separator = '.'
-    decimalregex = re.compile(r'[^0-9,-]')
+    encoding = "utf-8"
+    decimal_separator = "."
+    decimalregex = re.compile(r"[^0-9,-]")
 
-    def __init__(self):
-        self.decimal_cleaner = re.compile(r'[^0-9-%s]' % self.decimal_separator)
+    def __init__(self) -> None:
+        self.decimal_cleaner = re.compile(r"[^0-9-%s]" % self.decimal_separator)
 
-    def read_transactions(self, rows):
-        column_mapping = {}
+    def read_transactions(self, statemen_file: IO) -> Iterable[Transaction]:
+        rows = statemen_file.read().decode(self.encoding).split("\n")
+        column_mapping: Dict[str, int] = {}
         csv_reader = csv.reader(rows, delimiter=self.delimiter, quotechar=self.quotechar)
         for row in csv_reader:
             if not column_mapping:
@@ -29,14 +33,14 @@ class CsvReader(BaseReader):
                 except ValueError:
                     pass
                 continue
-            yield {key: self.get_value(key, row[column_mapping[key]]) for key in column_mapping}
+            yield Transaction(**{key: self.get_value(key, row[column_mapping[key]]) for key in column_mapping})
 
-    def get_value(self, key, value):
-        if key in ('accounted_date', 'entry_date'):
+    def get_value(self, key: str, value: str) -> Any:
+        if key in ("accounted_date", "entry_date"):
             return datetime.datetime.strptime(value, self.date_format).date()
-        elif key == 'amount':
-            return decimal.Decimal(self.decimal_cleaner.sub('', value).replace(self.decimal_separator, '.'))
-        elif key.endswith('_symbol'):
+        elif key == "amount":
+            return decimal.Decimal(self.decimal_cleaner.sub("", value).replace(self.decimal_separator, "."))
+        elif key.endswith("_symbol"):
             return int(value) if value.isdigit() else 0
         else:
             return value

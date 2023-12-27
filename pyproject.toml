@@ -1,9 +1,8 @@
 [tool.black]
 line-length = 120
-skip-string-normalization = true
 
 [tool.flake8]
-exclude = "bankreader/migrations"
+# exclude = "bankreader/migrations"
 max-line-length = 120
 
 [tool.isort]
@@ -16,6 +15,30 @@ multi_line_output = 3
 profile = "black"
 skip_glob = "*migrations*"
 use_parentheses = true
+
+[tool.mypy]
+# warn_return_any = true
+# warn_unused_configs = true
+# exclude = [
+#    '^file1\.py$',  # TOML literal string (single-quotes, no escaping necessary)
+#    "^file2\\.py$",  # TOML basic string (double-quotes, backslash and other characters need escaping)
+#]
+python_version = "3.10"
+plugins = ["mypy_django_plugin.main"]
+disallow_untyped_defs = true
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+
+#[[tool.mypy.overrides]]
+#module = "mycode.foo.*"
+#disallow_untyped_defs = true
+
+[tool.django-stubs]
+django_settings_module = "bankreader_demo.settings"
+# if true, all unknown settings in django.conf.settings will fallback to Any,
+# specify it if your settings are loaded dynamically to avoid false positives
+# ignore_missing_settings = true
 
 [tool.poetry]
 name = "django-bankreader"
@@ -44,7 +67,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7"
+python = ">=3.10"
 Django = ">=3.0,<4"
 django-localflavor = "*"
 mt-940 = "*"
@@ -55,7 +78,9 @@ autoflake = "*"
 isort = "*"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4.3"
+pytest = "*"
+mypy = "*"
+django-stubs = "*"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
