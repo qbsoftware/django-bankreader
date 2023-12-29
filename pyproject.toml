@@ -19,7 +19,7 @@ use_parentheses = true
 
 [tool.poetry]
 name = "django-bankreader"
-version = "1.1.0"
+version = "1.1.1"
 description = "Pluggable django application for reading and processing various formats of bank account statements"
 authors = ["Jakub Dorňák <jakub.dornak@misli.cz>"]
 license = "BSD-3-Clause"
@@ -59,4 +59,4 @@ pytest = "^7.4.3"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.1.0"]
+requires = ["poetry-core>=1.1.1"]
