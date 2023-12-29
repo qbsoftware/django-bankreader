@@ -15,7 +15,7 @@ class MT940Reader(BaseReader):
             account_match = re.search(r"([0-9]+-)?([0-9]{10})/([0-9]{4})", purpose)
             description = re.split("([KVS]S [0-9]{10}){3}", purpose)[-1]
             yield {
-                "transaction_id": transaction.data.get("bank_reference"),
+                "transaction_id": transaction.data.get("customer_reference"),
                 "entry_date": transaction.data.get("entry_date"),
                 "accounted_date": transaction.data.get("date"),
                 "remote_account_number": account_match and account_match.group(),
