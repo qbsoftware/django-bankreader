@@ -23,9 +23,9 @@ class MT940Reader(BaseReader):
                 remote_account_number=account_match.group() if account_match else "",
                 remote_account_name=transaction.data.get("applicant_name"),
                 amount=transaction.data.get("amount").amount,
-                variable_symbol=symbols.get("VS", ""),
-                constant_symbol=symbols.get("KS", ""),
-                specific_symbol=symbols.get("SS", ""),
+                variable_symbol=symbols.get("VS"),
+                constant_symbol=symbols.get("KS"),
+                specific_symbol=symbols.get("SS"),
                 sender_description=description,
                 recipient_description=description,
             )
