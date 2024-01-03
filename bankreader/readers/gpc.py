@@ -19,7 +19,7 @@ class GpcReader(BaseReader):
                     # send previous transaction data
                     if "entry_date" not in transaction:
                         transaction["entry_date"] = transaction["accounted_date"]
-                    yield transaction
+                    yield Transaction(**transaction)
                     transaction = None
                 if row[60] in "12":
                     # create new transaction data
