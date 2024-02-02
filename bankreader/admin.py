@@ -191,6 +191,10 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
 class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
     date_hierarchy = "accounted_date"
     ordering = ("-accounted_date",)
+    list_filter = [
+        "account_statement__account",
+        ("amount", AmountFieldListFilter),
+    ]
 
     def get_list_display(self, request: HttpRequest) -> List[str | Callable[[Transaction], str]]:  # type: ignore
         return list(self.get_list_display_generator(request))
@@ -264,15 +268,8 @@ class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
     def get_list_filter(  # type: ignore
         self,
         request: HttpRequest,
-    ) -> Tuple[str | Tuple[str, Type[admin.ListFilter]], ...]:
-        base_filters: Tuple[str | Tuple[str, Type[admin.ListFilter]], ...] = (
-            "account_statement__account",
-            ("amount", AmountFieldListFilter),
-        )
-        related_filters: Tuple[str | Tuple[str, Type[admin.ListFilter]], ...] = tuple(
-            (name, IdentifiedFieldListFilter) for name in get_transaction_relations()
-        )
-        return base_filters + related_filters
+    ) -> List[Any]:
+        return self.list_filter + [(name, IdentifiedFieldListFilter) for name in get_transaction_relations()]
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet[Transaction]:
         return (
