@@ -4,7 +4,7 @@ from django.db import IntegrityError, models, transaction as db_transaction
 from django.utils.translation import gettext, gettext_lazy as _
 from localflavor.generic.models import BICField, IBANField
 
-from .readers import get_reader_choices, readers
+from .readers import readers
 from .readers.base import BaseReader
 
 
@@ -15,7 +15,6 @@ class Account(models.Model):
     reader = models.CharField(
         _("account statement format"),
         blank=True,
-        choices=get_reader_choices(),
         max_length=150,
         null=True,
     )

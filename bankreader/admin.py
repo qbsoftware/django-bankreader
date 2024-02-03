@@ -15,6 +15,8 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
+from bankreader.readers import get_reader_choices
+
 from .models import Account, AccountStatement, Transaction
 
 logger = logging.getLogger(__name__)
@@ -107,6 +109,11 @@ class AccountAdmin(admin.ModelAdmin):
                 count=obj.account_statements_count,
             )
         )
+
+    def formfield_for_dbfield(self, db_field: models.Field, request: HttpRequest, **kwargs: Any) -> forms.Field | None:
+        if db_field.name == "reader":
+            return forms.ChoiceField(choices=get_reader_choices())
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
 
 
 class ReadOnlyMixin:

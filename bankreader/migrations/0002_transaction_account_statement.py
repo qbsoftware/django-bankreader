@@ -1,4 +1,3 @@
-from bankreader.readers import get_reader_choices
 from django.apps.registry import Apps
 from django.db import migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
@@ -51,7 +50,6 @@ class Migration(migrations.Migration):
             name="reader",
             field=models.CharField(
                 blank=True,
-                choices=get_reader_choices(),
                 max_length=150,
                 null=True,
                 verbose_name="account statement format",
