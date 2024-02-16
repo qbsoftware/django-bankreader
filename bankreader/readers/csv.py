@@ -2,11 +2,15 @@ import csv
 import datetime
 import decimal
 import re
+from logging import getLogger
 from typing import IO, Any, Dict, Iterable
 
 from bankreader.models import Transaction
 
 from .base import BaseReader
+
+
+logger = getLogger(__name__)
 
 
 class CsvReader(BaseReader):
@@ -33,7 +37,12 @@ class CsvReader(BaseReader):
                 except ValueError:
                     pass
                 continue
-            yield Transaction(**{key: self.get_value(key, row[column_mapping[key]]) for key in column_mapping})
+            try:
+                data = {key: self.get_value(key, row[column_mapping[key]]) for key in column_mapping}
+            except IndexError:
+                logger.error("Error reading CSV file: %s", dict(row=row, column_mapping=column_mapping))
+                continue
+            yield Transaction(**data)
 
     def get_value(self, key: str, value: str) -> Any:
         if key in ("accounted_date", "entry_date"):
