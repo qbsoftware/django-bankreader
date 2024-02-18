@@ -31,12 +31,17 @@ class CsvReader(BaseReader):
         column_mapping: Dict[str, int] = {}
         csv_reader = csv.reader(rows, delimiter=self.delimiter, quotechar=self.quotechar)
         for row in csv_reader:
+            # skip empty lines
+            if row == []:
+                continue
+            # skip header until we find the column mapping
             if not column_mapping:
                 try:
-                    column_mapping = {key: row.index(csv_key) for csv_key, key in self.column_mapping.items()}
+                    column_mapping = {key: row.index(csv_key) for key, csv_key in self.column_mapping.items()}
                 except ValueError:
                     pass
                 continue
+            # read individual transactions
             try:
                 data = {key: self.get_value(key, row[column_mapping[key]]) for key in column_mapping}
             except IndexError:

@@ -83,14 +83,14 @@ class Transaction(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, verbose_name=_("account"))
     entry_date = models.DateField(_("entry date"))
     accounted_date = models.DateField(_("accounted date"))
-    remote_account_number = models.CharField(_("remote account number"), max_length=64)
-    remote_account_name = models.CharField(_("remote account name"), max_length=128)
+    remote_account_number = models.CharField(_("remote account number"), default="", max_length=64)
+    remote_account_name = models.CharField(_("remote account name"), default="", max_length=128)
     amount = models.DecimalField(_("amount"), decimal_places=2, max_digits=20)
     variable_symbol = models.BigIntegerField(_("variable symbol"), default=0)
     constant_symbol = models.BigIntegerField(_("constant symbol"), default=0)
     specific_symbol = models.BigIntegerField(_("specific symbol"), default=0)
-    sender_description = models.CharField(_("description for sender"), max_length=256)
-    recipient_description = models.CharField(_("description for recipient"), max_length=256)
+    sender_description = models.CharField(_("description for sender"), default="", max_length=256)
+    recipient_description = models.CharField(_("description for recipient"), default="", max_length=256)
 
     class Meta:
         ordering = ("accounted_date",)
@@ -100,3 +100,10 @@ class Transaction(models.Model):
 
     def __str__(self) -> str:
         return f"{self.accounted_date} {self.amount} {self.remote_account_name} {self.sender_description}"
+
+    def save(self, *args, **kwargs) -> None:
+        if self.entry_date is None and self.accounted_date is not None:
+            self.entry_date = self.accounted_date
+        if self.accounted_date is None and self.entry_date is not None:
+            self.accounted_date = self.entry_date
+        return super().save(**kwargs)
