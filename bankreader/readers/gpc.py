@@ -9,8 +9,8 @@ from .base import BaseReader
 class GpcReader(BaseReader):
     label = "GPC"
 
-    def read_transactions(self, statemen_file: IO) -> Iterable[Transaction]:
-        rows = statemen_file.read().decode(self.encoding).split("\n")
+    def read_transactions(self, statement_file: IO) -> Iterable[Transaction]:
+        rows = statement_file.read().decode(self.encoding).split("\n")
         transaction = None
         for row in rows:
             # first row of transaction data

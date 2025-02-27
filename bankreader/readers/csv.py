@@ -26,8 +26,8 @@ class CsvReader(BaseReader):
     def __init__(self) -> None:
         self.decimal_cleaner = re.compile(r"[^0-9-%s]" % self.decimal_separator)
 
-    def read_transactions(self, statemen_file: IO) -> Iterable[Transaction]:
-        rows = statemen_file.read().decode(self.encoding).split("\n")
+    def read_transactions(self, statement_file: IO) -> Iterable[Transaction]:
+        rows = statement_file.read().decode(self.encoding).split("\n")
         column_mapping: Dict[str, int] = {}
         csv_reader = csv.reader(rows, delimiter=self.delimiter, quotechar=self.quotechar)
         for row in csv_reader:
