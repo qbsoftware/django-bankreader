@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, List, Tuple, Type
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, Iterator, List, Type
 
 from django import forms
 from django.contrib import admin, messages
@@ -54,7 +54,7 @@ class AmountFieldListFilter(admin.FieldListFilter):
     def expected_parameters(self) -> list[str | None]:
         return [self.lookup_kwarg_credit, self.lookup_kwarg_debit]
 
-    def choices(self, changelist: ChangeList) -> Generator[dict[str, Any], None, None]:
+    def choices(self, changelist: ChangeList) -> Iterator:
         yield {
             "selected": self.lookup_val_credit is None and self.lookup_val_debit is None,
             "query_string": changelist.get_query_string(remove=[self.lookup_kwarg_credit, self.lookup_kwarg_debit]),
@@ -73,7 +73,7 @@ class AmountFieldListFilter(admin.FieldListFilter):
 
 
 class IdentifiedFieldListFilter(admin.RelatedFieldListFilter):
-    def choices(self, changelist: ChangeList) -> Generator[dict[str, Any], None, None]:
+    def choices(self, changelist: ChangeList) -> Iterator:
         yield {
             "selected": self.lookup_val_isnull is None,
             "query_string": changelist.get_query_string(remove=[self.lookup_kwarg_isnull]),

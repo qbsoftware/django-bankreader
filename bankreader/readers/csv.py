@@ -9,7 +9,6 @@ from bankreader.models import Transaction
 
 from .base import BaseReader
 
-
 logger = getLogger(__name__)
 
 

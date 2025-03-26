@@ -101,7 +101,7 @@ class Transaction(models.Model):
     def __str__(self) -> str:
         return f"{self.accounted_date} {self.amount} {self.remote_account_name} {self.sender_description}"
 
-    def save(self, *args, **kwargs) -> None:
+    def save(self, **kwargs) -> None:  # type: ignore
         if self.entry_date is None and self.accounted_date is not None:
             self.entry_date = self.accounted_date
         if self.accounted_date is None and self.entry_date is not None:
