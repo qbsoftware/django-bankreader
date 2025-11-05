@@ -55,7 +55,7 @@ django_settings_module = "bankreader_demo.settings"
 
 [tool.poetry]
 name = "django-bankreader"
-version = "1.4.0"
+version = "1.5.0"
 description = "Pluggable django application for reading and processing various formats of bank account statements"
 authors = ["Jakub Dorňák <jakub.dornak@qbsoftware.cz>"]
 license = "BSD-3-Clause"
@@ -95,4 +95,4 @@ ruff = "*"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.4.0"]
+requires = ["poetry-core>=1.5.0"]
