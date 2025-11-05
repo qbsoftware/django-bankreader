@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from collections.abc import Iterable
 
 from django.db import IntegrityError, models, transaction as db_transaction
 from django.utils.translation import gettext, gettext_lazy as _
@@ -51,7 +51,7 @@ class AccountStatement(models.Model):
         return self.statement
 
     @db_transaction.atomic
-    def save_with_transactions(self, transactions: Iterable["Transaction"]) -> List[str]:
+    def save_with_transactions(self, transactions: Iterable["Transaction"]) -> list[str]:
         self.from_date = min(td.accounted_date for td in transactions)
         self.to_date = max(td.accounted_date for td in transactions)
         self.save()

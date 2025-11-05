@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from typing import Any
 
 from django.db import models
@@ -38,7 +36,7 @@ class OrderPayment(models.Model):
         verbose_name_plural = _("order payments")
 
     def __str__(self) -> str:
-        return "{}, {}".format(self.order, self.amount)
+        return f"{self.order}, {self.amount}"
 
 
 @receiver(post_save, sender=Transaction)

@@ -26,30 +26,28 @@ class Command(BaseCommand):
         try:
             account = Account.objects.filter(reader__isnull=False).get(q)
         except Account.DoesNotExist:
-            self.stderr.write(self.style.ERROR('Account "%s" does not exist' % options["account"]))
+            self.stderr.write(self.style.ERROR('Account "{}" does not exist'.format(options["account"])))
             return
         except Account.MultipleObjectsReturned:
-            self.stderr.write(self.style.ERROR('Account "%s" is ambiguous' % options["account"]))
+            self.stderr.write(self.style.ERROR('Account "{}" is ambiguous'.format(options["account"])))
             return
 
         reader = account.get_reader()
         assert reader is not None
 
         for input_file in options["input_file"]:
-            self.stdout.write(
-                self.style.HTTP_INFO('Loading bank statement "%s" for account "%s"' % (input_file, account))
-            )
+            self.stdout.write(self.style.HTTP_INFO(f'Loading bank statement "{input_file}" for account "{account}"'))
             try:
                 with open(input_file, "rb") as f:
                     transactions = tuple(reader.read_file(f))
             except Exception as e:
                 if settings.DEBUG:
                     traceback.print_exc()
-                self.stderr.write(self.style.ERROR('Error loading bank statement "%s": %s' % (input_file, e)))
+                self.stderr.write(self.style.ERROR(f'Error loading bank statement "{input_file}": {e}'))
                 continue
             if not transactions:
                 self.stderr.write(
-                    self.style.ERROR('The account statement "%s" doesn\'t contain any transaction data.' % input_file)
+                    self.style.ERROR(f'The account statement "{input_file}" doesn\'t contain any transaction data.')
                 )
                 continue
             statement = AccountStatement(account=account, statement=os.path.basename(input_file))
@@ -58,7 +56,6 @@ class Command(BaseCommand):
                 self.stderr.write(self.style.WARNING(message))
             self.stdout.write(
                 self.style.HTTP_INFO(
-                    "Successfully loaded %d transactions (%d new) from %s."
-                    % (len(transactions), len(transactions) - len(messages), input_file)
+                    f"Successfully loaded {len(transactions)} transactions ({len(transactions) - len(messages)} new) from {input_file}."
                 )
             )

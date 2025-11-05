@@ -1,5 +1,6 @@
 import re
-from typing import IO, Iterable
+from collections.abc import Iterable
+from typing import IO
 
 from mt940.parser import parse as mt940_parse
 

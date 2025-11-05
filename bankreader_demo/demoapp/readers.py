@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from bankreader.readers import register_reader
 from bankreader.readers.best import BestReader
 from bankreader.readers.csv import CsvReader
@@ -13,7 +15,7 @@ class KbCsvReader(CsvReader):
     label = "Komerční banka CSV"
     encoding = "cp1250"
     delimiter = ";"
-    column_mapping = {
+    column_mapping: ClassVar[dict[str, str]] = {
         "accounted_date": "Datum splatnosti",
         "entry_date": "Datum odepsani JB",
         "remote_account_number": "Protiucet/Kod banky",

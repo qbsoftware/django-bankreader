@@ -1,5 +1,6 @@
 import datetime
-from typing import IO, Iterable
+from collections.abc import Iterable
+from typing import IO
 
 from bankreader.models import Transaction
 
@@ -27,12 +28,7 @@ class GpcReader(BaseReader):
                     transaction = {
                         "transaction_id": row[35:48],
                         "accounted_date": datetime.datetime.strptime(row[122:128], "%d%m%y").date(),
-                        "remote_account_number": "%s-%s/%s"
-                        % (
-                            row[19:25],
-                            row[25:35],
-                            row[73:77],
-                        ),
+                        "remote_account_number": f"{row[19:25]}-{row[25:35]}/{row[73:77]}",
                         "remote_account_name": row[97:117].strip(),
                         "amount": amount if row[60] == "2" else -amount,
                         "variable_symbol": int(row[61:71]),

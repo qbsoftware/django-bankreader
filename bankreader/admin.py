@@ -1,5 +1,6 @@
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, Iterator, List, Type
+from collections.abc import Callable, Generator, Iterator
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from django import forms
 from django.contrib import admin, messages
@@ -31,8 +32,8 @@ if TYPE_CHECKING:
         transactions_count: int
 
 
-def get_transaction_relations() -> Dict[str, OneToOneRel]:
-    return {rel.name: rel for rel in Transaction._meta.related_objects if isinstance(rel, OneToOneRel)}  # type: ignore
+def get_transaction_relations() -> dict[str, OneToOneRel]:
+    return {rel.name: rel for rel in Transaction._meta.related_objects if isinstance(rel, OneToOneRel)}
 
 
 class AmountFieldListFilter(admin.FieldListFilter):
@@ -40,13 +41,13 @@ class AmountFieldListFilter(admin.FieldListFilter):
         self,
         field: models.Field,
         request: HttpRequest,
-        params: Dict[str, str],
-        model: Type[models.Model],
+        params: dict[str, str],
+        model: type[models.Model],
         model_admin: admin.ModelAdmin,
         field_path: str,
     ) -> None:
-        self.lookup_kwarg_credit = "%s__gt" % field_path
-        self.lookup_kwarg_debit = "%s__lt" % field_path
+        self.lookup_kwarg_credit = f"{field_path}__gt"
+        self.lookup_kwarg_debit = f"{field_path}__lt"
         self.lookup_val_credit = params.get(self.lookup_kwarg_credit)
         self.lookup_val_debit = params.get(self.lookup_kwarg_debit)
         super().__init__(field, request, params, model, model_admin, field_path)
@@ -96,18 +97,17 @@ class AccountAdmin(admin.ModelAdmin):
     list_display = ("name", "iban", "bic", "account_statements_link")
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet["AccountWithStatementsCount"]:
-        return super().get_queryset(request).annotate(account_statements_count=models.Count("account_statements"))
+        qs: models.QuerySet[AccountWithStatementsCount] = (
+            super().get_queryset(request).annotate(account_statements_count=models.Count("account_statements"))
+        )
+        return qs
 
     account_statement_changelist = reverse("admin:bankreader_accountstatement_changelist")
 
     @admin.display(description=_("account statements"), ordering="account_statements_count")
     def account_statements_link(self, obj: "AccountWithStatementsCount") -> str:
         return mark_safe(
-            '<a href="{url}?account__id__exact={account_id}">{count}</a>'.format(
-                url=self.account_statement_changelist,
-                account_id=obj.id,
-                count=obj.account_statements_count,
-            )
+            f'<a href="{self.account_statement_changelist}?account__id__exact={obj.pk}">{obj.account_statements_count}</a>'
         )
 
     def formfield_for_dbfield(self, db_field: models.Field, request: HttpRequest, **kwargs: Any) -> forms.Field | None:
@@ -137,7 +137,7 @@ class AccountStatementForm(forms.ModelForm):
         except Exception:
             msg = _("Failed to read transaction data in format {}.").format(reader.label)
             logger.exception(msg)
-            raise ValidationError(msg)
+            raise ValidationError(msg) from None
         if not self.transactions:
             raise ValidationError(_("The account statement doesn't contain any transaction data."))
         return self.cleaned_data
@@ -158,12 +158,13 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
     ordering = ("-to_date",)
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet["AccountStatementWithTransactionsCount"]:
-        return (
+        qs: models.QuerySet[AccountStatementWithTransactionsCount] = (
             super()
             .get_queryset(request)
             .select_related("account")
             .annotate(transactions_count=models.Count("transactions"))
         )
+        return qs
 
     @admin.display(description=_("account"), ordering="account__name")
     def account_name(self, obj: AccountStatement) -> str:
@@ -174,11 +175,7 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
     @admin.display(description=_("transactions"), ordering="transactions_count")
     def transactions_link(self, obj: "AccountStatementWithTransactionsCount") -> str:
         return mark_safe(
-            '<a href="{url}?account_statement__id__exact={account_statement_id}">{count}</a>'.format(
-                url=self.transaction_changelist,
-                account_statement_id=obj.id,
-                count=obj.transactions_count,
-            )
+            f'<a href="{self.transaction_changelist}?account_statement__id__exact={obj.pk}">{obj.transactions_count}</a>'
         )
 
     def save_model(
@@ -198,12 +195,12 @@ class AccountStatementAdmin(ReadOnlyMixin, admin.ModelAdmin):
 class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
     date_hierarchy = "accounted_date"
     ordering = ("-accounted_date",)
-    list_filter = [
+    list_filter: ClassVar[list[Any]] = [
         "account_statement__account",
         ("amount", AmountFieldListFilter),
     ]
 
-    def get_list_display(self, request: HttpRequest) -> List[str | Callable[[Transaction], str]]:  # type: ignore
+    def get_list_display(self, request: HttpRequest) -> list[str | Callable[[Transaction], str]]:  # type: ignore
         return list(self.get_list_display_generator(request))
 
     def get_list_display_generator(
@@ -219,30 +216,26 @@ class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
             can_add = request.user.has_perm(f"{RelatedModel._meta.app_label}.add_{RelatedModel._meta.model_name}")
             can_see = request.user.has_perm(f"{RelatedModel._meta.app_label}.view_{RelatedModel._meta.model_name}")
 
-            changelist_url = (
-                reverse(
-                    "admin:{}_{}_changelist".format(
-                        RelatedModel._meta.app_label,
-                        RelatedModel._meta.model_name,
-                    )
-                )
+            changelist_url = str(
+                reverse(f"admin:{RelatedModel._meta.app_label}_{RelatedModel._meta.model_name}_changelist")
                 if can_see
                 else ""
             )
 
-            add_url = (
-                reverse(
-                    "admin:{}_{}_add".format(
-                        RelatedModel._meta.app_label,
-                        RelatedModel._meta.model_name,
-                    )
-                )
-                if can_add
-                else ""
+            add_url = str(
+                reverse(f"admin:{RelatedModel._meta.app_label}_{RelatedModel._meta.model_name}_add") if can_add else ""
             )
 
             @admin.display(description=RelatedModel._meta.verbose_name)
-            def related_object_link(obj: Transaction) -> str:
+            def related_object_link(
+                obj: Transaction,
+                relation: OneToOneRel = relation,
+                RelatedModel: type[models.Model] = RelatedModel,
+                can_see: bool = can_see,
+                can_add: bool = can_add,
+                changelist_url: str = changelist_url,
+                add_url: str = add_url,
+            ) -> str:
                 try:
                     related_object = getattr(obj, relation.name)
                 except RelatedModel.DoesNotExist:  # type: ignore
@@ -253,7 +246,7 @@ class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
                             '<a href="{changelist_url}?{remote_name}__id__exact={obj_id}">{text}</a>',
                             changelist_url=changelist_url,
                             remote_name=relation.remote_field.name,
-                            obj_id=obj.id,
+                            obj_id=obj.pk,
                             text=str(related_object),
                         )
                         if can_see
@@ -261,10 +254,10 @@ class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
                     )
                 elif can_add:
                     return format_html(
-                        '<a href="{add_url}?{remote_name}={obj_id}" title="{title}">' '<img src="{icon}" alt="+"/></a>',
+                        '<a href="{add_url}?{remote_name}={obj_id}" title="{title}"><img src="{icon}" alt="+"/></a>',
                         add_url=add_url,
                         remote_name=relation.remote_field.name,
-                        obj_id=obj.id,
+                        obj_id=obj.pk,
                         title=_("add"),
                         icon=static("admin/img/icon-addlink.svg"),
                     )
@@ -272,10 +265,7 @@ class TransactionAdmin(ReadOnlyMixin, admin.ModelAdmin):
 
             yield related_object_link
 
-    def get_list_filter(  # type: ignore
-        self,
-        request: HttpRequest,
-    ) -> List[Any]:
+    def get_list_filter(self, request: HttpRequest) -> list[Any]:
         return self.list_filter + [(name, IdentifiedFieldListFilter) for name in get_transaction_relations()]
 
     def get_queryset(self, request: HttpRequest) -> models.QuerySet[Transaction]:

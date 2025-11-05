@@ -1,4 +1,5 @@
-from typing import IO, TYPE_CHECKING, Iterable
+from collections.abc import Iterable
+from typing import IO, TYPE_CHECKING
 from zipfile import BadZipFile, ZipFile
 
 if TYPE_CHECKING:
