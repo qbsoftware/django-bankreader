@@ -64,9 +64,8 @@ class AccountStatement(models.Model):
                     transaction.save()
             except IntegrityError:
                 messages.append(
-                    gettext('Transaction "{transaction_id}" already exists for account "{account_name}".').format(
+                    gettext('Transaction "{transaction_id}" already exists.').format(
                         transaction_id=transaction.transaction_id,
-                        account_name=self.account.name,
                     )
                 )
         return messages
@@ -94,7 +93,22 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ("accounted_date",)
-        unique_together = ("account", "transaction_id")
+        unique_together = (
+            ("account", "transaction_id"),
+            (
+                "transaction_id",
+                "entry_date",
+                "accounted_date",
+                "remote_account_number",
+                "remote_account_name",
+                "amount",
+                "variable_symbol",
+                "constant_symbol",
+                "specific_symbol",
+                "sender_description",
+                "recipient_description",
+            ),
+        )
         verbose_name = _("transaction")
         verbose_name_plural = _("transactions")
 
